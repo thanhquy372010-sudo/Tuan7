@@ -1,0 +1,66 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using QuanLySinhVien.DAL; // BLL được phép gọi DAL
+
+namespace QuanLySinhVien.BLL
+{
+    public class StudentBLL
+    {
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            using (var context = new AppDbContext())
+            {
+                return await context.Students.ToListAsync();
+            }
+        }
+
+        public async Task AddStudentAsync(string fullName, double grade)
+        {
+            using (var context = new AppDbContext())
+            {
+                context.Students.Add(new Student { FullName = fullName, Grade = grade });
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateStudentAsync(int id, string fullName, double grade)
+        {
+            using (var context = new AppDbContext())
+            {
+                var sv = await context.Students.FindAsync(id);
+                if (sv != null)
+                {
+                    sv.FullName = fullName;
+                    sv.Grade = grade;
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task DeleteStudentAsync(int id)
+        {
+            using (var context = new AppDbContext())
+            {
+                var sv = await context.Students.FindAsync(id);
+                if (sv != null)
+                {
+                    context.Students.Remove(sv);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<List<Student>> GetFilteredStudentsAsync()
+        {
+            using (var context = new AppDbContext())
+            {
+                return await context.Students
+                    .Where(sv => sv.Grade >= 5)
+                    .OrderByDescending(sv => sv.Grade)
+                    .ToListAsync();
+            }
+        }
+    }
+}
